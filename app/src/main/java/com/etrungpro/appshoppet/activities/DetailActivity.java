@@ -79,32 +79,33 @@ public class DetailActivity extends AppCompatActivity {
         tvDetailDesc.setText(productDesc);
 
         productDetailAdapter = new ProductDetailAdapter(this, new ProductDetailAdapter.IProductDetailEvent() {
+            // cấp cho adapter quyển truy cập vào activity( sử dụng cú phạm truyên in terface vô danh
             @Override
-            public void set(String x) {
+            public void set(String x) {//khi sự kiên set sảy ra trong adapter thì
                 productImageUrl = x;
-                showProductImageBig();
+                showProductImageBig();// hiển thị hình ảnh lớn
             }
         });
-        productDetailAdapter.setList(getProductImageList());
-        LinearLayoutManager rcvProductLayout = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false);
-        rcvProductImage.setLayoutManager(rcvProductLayout);
-        rcvProductImage.setAdapter(productDetailAdapter);
+        productDetailAdapter.setList(getProductImageList());// cập nhật danh sách hình ảnh trong adapter theo dạng list
+        LinearLayoutManager rcvProductLayout = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.HORIZONTAL, false);// theo hướng ngang, không đảo ngược thứ tự
+        rcvProductImage.setLayoutManager(rcvProductLayout);// thieets lập Adapter cho recyclerView
+        rcvProductImage.setAdapter(productDetailAdapter);// đối tượng adapter đc gán cho recyclerView và hiển thị lên
         showProductImageBig();
-
+        // lưu trữ comment dưới từng loại sản pẩm
         commentAdapter = new CommentAdapter(DetailActivity.this);
         commentList = new ArrayList<>();
         LinearLayoutManager rcvCommentLayout = new LinearLayoutManager(getApplicationContext(), LinearLayoutManager.VERTICAL, false);
         rcvComment.setLayoutManager(rcvCommentLayout);
         rcvComment.setAdapter(commentAdapter);
-        getCommentList();
+        getCommentList();// Lấy danh sách comment
 
 
         btnAddQuatity.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int value = Integer.parseInt(edtQuatity.getText().toString());
+                int value = Integer.parseInt(edtQuatity.getText().toString());// chuyê cái value về dạng số nguyên
                 value +=1;
-                edtQuatity.setText(String.valueOf(value));
+                edtQuatity.setText(String.valueOf(value));//cập nhật số lượng mới
 
             }
         });
@@ -145,8 +146,8 @@ public class DetailActivity extends AppCompatActivity {
         if(edtComment.length() == 0) {
             return ;
         }
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        String userId = FirebaseAuth.getInstance().getUid();
+        FirebaseFirestore db = FirebaseFirestore.getInstance();// tương tác với firebase
+        String userId = FirebaseAuth.getInstance().getUid();// lấy id người dùng
         Comment comment = new Comment(userId,
                 productId, FieldValue.serverTimestamp(), edtComment.getText().toString());
         db.collection("comments")
@@ -154,15 +155,16 @@ public class DetailActivity extends AppCompatActivity {
                 .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
                     @Override
                     public void onSuccess(DocumentReference documentReference) {
-                       getCommentList();
+                       getCommentList();// cập nhật lại danh sách bình luận
                     }
                 })
+                // thất bại
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
                     }
                 });
-        edtComment.setText("");
+        edtComment.setText("");// cho về rỗng chờ lượt cmt tiếp
     }
 
     private void getCommentList() {
@@ -177,23 +179,23 @@ public class DetailActivity extends AppCompatActivity {
                         commentList.clear();
                         if(task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
-                                Comment comment = document.toObject(Comment.class);
-                                commentList.add(comment);
+                                Comment comment = document.toObject(Comment.class);// đồng nhật kiểu
+                                commentList.add(comment);//cập nhật lại danh sách cmt
                             }
-                            commentAdapter.setList(commentList);
+                            commentAdapter.setList(commentList);// giaodieenjn người dùng hiển thị cmt mới
                         }
                        else {
                            // Làm gì đó;
                         }
                     }
                 });
-        db.collection("comments").whereEqualTo("productId", productId).count().get(AggregateSource.SERVER)
+        db.collection("comments").whereEqualTo("productId", productId).count().get(AggregateSource.SERVER)// count lấy dữ liệu trên sever firebase đếm số lượng bt hợp lệ
                 .addOnCompleteListener(new OnCompleteListener<AggregateQuerySnapshot>() {
                     @Override
                     public void onComplete(@NonNull Task<AggregateQuerySnapshot> task) {
                         if(task.isSuccessful()) {
                             AggregateQuerySnapshot snapshot = task.getResult();
-                            tvDanhGia.setText("Đánh giá (" + String.valueOf(snapshot.getCount()) + ")");
+                            tvDanhGia.setText("Đánh giá (" + String.valueOf(snapshot.getCount()) + ")");// trả về số lượng bình luận đc đếm
                         }
                     }
                 });
@@ -205,8 +207,8 @@ public class DetailActivity extends AppCompatActivity {
         }
 
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-        storageRef.child(productImageUrl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+        StorageReference storageRef = storage.getReference();// tham chiếu đến tệp hình hảnh đc chỉ định
+        storageRef.child(productImageUrl).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {// tải hình ảnh xuống
             @Override
             public void onSuccess(Uri uri) {
 
@@ -223,6 +225,8 @@ public class DetailActivity extends AppCompatActivity {
             }
         });
     }
+
+    //tải hình ảnhsắp xếp thành list trong giở hàng
     private ArrayList<ProductDetail> getProductImageList() {
         if(productImages.size() == 0) {
             return null;
@@ -235,7 +239,7 @@ public class DetailActivity extends AppCompatActivity {
             list.add(new ProductDetail(productImage));
         }
         if(list.size() > 0 ) {
-            productImageUrl = list.get(0).getImg();
+            productImageUrl = list.get(0).getImg();// hình ảnh thành phần tử đầu tiên của list
         }
         return list;
     }

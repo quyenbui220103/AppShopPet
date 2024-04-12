@@ -29,47 +29,64 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         this.mContext = mContext;
     }
 
+    // Phương thức này để cập nhật danh sách bình luận
     public void setList(ArrayList<Comment> mList) {
         this.mList = mList;
         notifyDataSetChanged();
     }
 
+    // Phương thức này tạo ViewHolder cho mỗi item
     @NonNull
     @Override
     public CommentViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Tạo một View từ layout user_comment.xml
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.user_comment, parent, false);
-        return new CommentAdapter.CommentViewHolder(v);
+        return new CommentViewHolder(v);
     }
 
+    // Phương thức này được gọi để hiển thị dữ liệu tại vị trí đã chỉ định từ danh sách bình luận
     @Override
     public void onBindViewHolder(@NonNull CommentViewHolder holder, int position) {
+        // Lấy ra đối tượng Comment tại vị trí position trong danh sách bình luận
         Comment comment = mList.get(position);
 
+        // Hiển thị nội dung bình luận
         holder.tvUserComment.setText(comment.getContent());
+
+        // Lấy ID của người dùng
         String userId = comment.getUserId();
+
+        // Khởi tạo đối tượng FirebaseFirestore để truy vấn dữ liệu từ Firestore
         FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        // Truy vấn vào collection "users" để lấy thông tin của người dùng
         db.collection("users").document(userId)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if(documentSnapshot.exists()) {
+                            // Chuyển đổi dữ liệu người dùng thành đối tượng User
                             User user = documentSnapshot.toObject(User.class);
-                            holder.imgUser.setImageResource(R.drawable.toc_tim);
+                            // Hiển thị hình ảnh người dùng và tên người dùng lên giao diện
+                            holder.imgUser.setImageResource(R.drawable.toc_tim); // Sử dụng ảnh mặc định, có thể thay đổi sau
                             holder.tvUserName.setText(user.getLastName() + " " + user.getFirstName());
                         } else {
-                            // Làm gì đó;
+                            // Xử lý trường hợp không tìm thấy người dùng
+                            // Có thể thêm mã xử lý ở đây nếu cần
                         }
                     }
                 })
                 .addOnFailureListener(new OnFailureListener() {
                     @Override
                     public void onFailure(@NonNull Exception e) {
-                        // làm gì đó;
+                        // Xử lý khi truy vấn không thành công
+                        // Có thể thêm mã xử lý ở đây nếu cần
                     }
                 });
     }
 
+    // Phương thức này trả về số lượng item trong danh sách bình luận
     @Override
     public int getItemCount() {
         if(mList != null) {
@@ -78,6 +95,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
         return 0;
     }
 
+    // Lớp này định nghĩa ViewHolder cho mỗi item
     public class CommentViewHolder extends RecyclerView.ViewHolder {
 
         ImageView imgUser;
@@ -86,9 +104,9 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.CommentV
 
         public CommentViewHolder(@NonNull View itemView) {
             super(itemView);
-            imgUser = itemView.findViewById(R.id.user_comment_img);
-            tvUserName = itemView.findViewById(R.id.tv_user_comment_name);
-            tvUserComment = itemView.findViewById(R.id.tv_user_comment_content);
+            imgUser = itemView.findViewById(R.id.user_comment_img); // ImageView hiển thị hình ảnh người dùng
+            tvUserName = itemView.findViewById(R.id.tv_user_comment_name); // TextView hiển thị tên người dùng
+            tvUserComment = itemView.findViewById(R.id.tv_user_comment_content); // TextView hiển thị nội dung bình luận
         }
     }
 }

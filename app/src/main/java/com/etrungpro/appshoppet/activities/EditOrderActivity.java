@@ -62,11 +62,11 @@ public class EditOrderActivity extends AppCompatActivity {
         //hiển thị danh sách sản phẩm trong giỏ hàng của đơn hàng.
         OrderAdapter orderAdapter = new OrderAdapter(EditOrderActivity.this);
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(
-                EditOrderActivity.this, LinearLayoutManager.VERTICAL, false);
-        rcvCartOrder.setLayoutManager(linearLayoutManager);
+                EditOrderActivity.this, LinearLayoutManager.VERTICAL, false);//hien thi don hang theo huong doc
+        rcvCartOrder.setLayoutManager(linearLayoutManager);//thiet lap adapter thong qua rcv
         rcvCartOrder.setAdapter(orderAdapter);
-        tvSoLuongSp.setText("Đơn hàng (" + String.valueOf(detailCarts.size()) + ")");
-        orderAdapter.setList(detailCarts);
+        tvSoLuongSp.setText("Đơn hàng (" + String.valueOf(detailCarts.size()) + ")");//cap nhap so luong muc trong don hang
+        orderAdapter.setList(detailCarts);//dat cac muc dơn hang vào adapter de hien recyclerview
         //bat loi su kien thanh toan
         btnThanhToan.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -99,8 +99,8 @@ public class EditOrderActivity extends AppCompatActivity {
                             public void onComplete(@NonNull Task<QuerySnapshot> task) {
                                 if(task.isSuccessful()) {
                                     for (QueryDocumentSnapshot document : task.getResult()) {
-                                        for(DetailCart detailCart : detailCarts) {
-                                            if(document.getId().equals(detailCart.getProductId()))
+                                        for(DetailCart detailCart : detailCarts) {// lap cac muc trog detail cart
+                                            if(document.getId().equals(detailCart.getProductId()))//ktra xem id có khop nhau ko
                                                 productNames += (String)document.get("name") + " ";
                                         }
                                     }
@@ -154,13 +154,13 @@ public class EditOrderActivity extends AppCompatActivity {
         String userId = FirebaseAuth.getInstance().getUid();
         //trỏ đến bảng users đến user id get yêu cầu lấy dữ liệu của bảng
         db.collection("users")
-                .document(userId)
+                .document(userId)//
                 .get()
         //xử lý dữ liệu trả về
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if(documentSnapshot.exists()) {
+                        if(documentSnapshot.exists()) {//neu id ton tao
                             //chuyển đổi dữ liệu trả về từ Firestore thành một đối tượng User bằng cách sử dụng phương thức toObject() của đối tượng DocumentSnapshot.
                             User user = documentSnapshot.toObject(User.class);
                             //đặt văn bản của EditTextedtEmailOrder thành địa chỉ email của người dùng.

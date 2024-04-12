@@ -29,24 +29,24 @@ public class ConversationActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(savedInstanceState);// khởi tạo lại lớp cha và khôi phục lại trạng thái ban đầu
         setContentView(R.layout.activity_conversation);
         initUI();
 
-        conversations = new ArrayList<>();
-        conversationAdapter = new ConversationAdapter(this);
-        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ConversationActivity.this, LinearLayoutManager.VERTICAL, false);
-        conversationAdapter.setList(conversations);
-        rcvConversation.setLayoutManager(linearLayoutManager);
+        conversations = new ArrayList<>();// tạo 1 list để luw trữ
+        conversationAdapter = new ConversationAdapter(this);// gọi adapter để chuyển
+        LinearLayoutManager linearLayoutManager = new LinearLayoutManager(ConversationActivity.this, LinearLayoutManager.VERTICAL, false);// không bảo ngược thứ tự
+        conversationAdapter.setList(conversations);// Cung cấp list cuộc trò chuyện cho phía adapter
+        rcvConversation.setLayoutManager(linearLayoutManager);//  gọi đến và thiết lập layout và hiển thị lên
         rcvConversation.setAdapter(conversationAdapter);
 
-        getConversationList();
+        getConversationList();// cập nhật cuộc c=trò chuyện vào recuclerView
     }
 
     @Override
     protected void onResume() {
-        super.onResume();
-        getConversationList();
+        super.onResume();// tiếp tục hoạt động của lớp cha
+        getConversationList();// sau khi activity hoạt đong lại sau khoảng thời gian tạm dưng thì tin nhắn vẫn đc cập nhật tin mới nhất
     }
 
     void initUI() {
@@ -54,12 +54,12 @@ public class ConversationActivity extends AppCompatActivity {
     }
 
     private void getConversationList() {
-        String userId = FirebaseAuth.getInstance().getUid();
+        String userId = FirebaseAuth.getInstance().getUid();// lây id người dùng hiện tại từ firebaseAuth
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        conversationListener = db.collection("conversations")
-                .whereArrayContains("users", userId)
-                .addSnapshotListener(new EventListener<QuerySnapshot>() {
+        conversationListener = db.collection("conversations")// truy vấn vào conversation trên firebase
+                .whereArrayContains("users", userId)// lọc cuộc trò chuyện của người dùng có cùng id
+                .addSnapshotListener(new EventListener<QuerySnapshot>() {// nếu có thay đổi thì cập nhật lại tài liệu mới
                     @Override
                     public void onEvent(@Nullable QuerySnapshot queryDocumentSnapshots, @Nullable FirebaseFirestoreException e) {
                         if (e != null) {
@@ -67,21 +67,21 @@ public class ConversationActivity extends AppCompatActivity {
                             return;
                         }
 
-                        conversations.clear();
+                        conversations.clear();// xóa danh sách các cuộc trò chuyện hiện tại để lấy dữ liếu mới nất trên firebase
 
                         for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                            Conversation conversation = document.toObject(Conversation.class);
-                            conversations.add(conversation);
+                            Conversation conversation = document.toObject(Conversation.class);// chuyển đối tượng về dạng documment
+                            conversations.add(conversation); //thêm nó vào
                         }
 
-                        conversationAdapter.setList(conversations);
+                        conversationAdapter.setList(conversations);// cập nhật dữ liệu vào conversationAdapter
                     }
                 });
     }
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        conversationListener.remove();
+        super.onDestroy();// hủy hành động của lớp cha
+        conversationListener.remove();// ngăn s thay đổi trong conversation trong khi hoạt động kết thúc
     }
 }

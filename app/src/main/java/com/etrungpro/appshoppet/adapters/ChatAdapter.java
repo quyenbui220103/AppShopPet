@@ -52,23 +52,23 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatViewHolder
     public void onBindViewHolder(@NonNull ChatViewHolder holder, int position) {
         Chat chat = mList.get(position);
         holder.tvChatContent.setText(chat.getText().trim());
-        String userId = FirebaseAuth.getInstance().getUid();
+        String userId = FirebaseAuth.getInstance().getUid();// Lấy id người dùng
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
         );
-
+// người gửi là người khác
         if(!chat.getSenderId().equals(userId)) {
             holder.tvChatContent.setBackgroundResource(R.drawable.my_msg_back);
-            params.gravity = Gravity.START;
+            params.gravity = Gravity.START; //căn chỉnh văn bản bên trái
             holder.tvChatDate.setGravity(Gravity.START);
             holder.tvChatContent.setPadding(30, 20, 30, 20);
-            params.setMargins(12, 12,12, 12);
+            params.setMargins(12, 12,12, 12);//
             holder.tvChatDate.setLayoutParams(params);
             holder.tvChatContent.setLayoutParams(params);
         } else {
             holder.tvChatContent.setBackgroundResource(R.drawable.opo_msg_back);
-            params.gravity = Gravity.END;
+            params.gravity = Gravity.END;// cane chỉnh bên pải
             holder.tvChatDate.setGravity(Gravity.END);
             holder.tvChatContent.setPadding(30, 20, 30, 20);
             params.setMargins(12, 12,12, 12);

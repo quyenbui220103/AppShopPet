@@ -56,59 +56,42 @@ public class ChatActivity extends AppCompatActivity {
         setContentView(R.layout.activity_chat);
         initUI();
 
-        tvSenderName.setText(getIntent().getStringExtra("name"));
-        FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-//        storageRef.child(getIntent().getStringExtra("profileImage"))
-//                .getDownloadUrl()
-//                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-//            @Override
-//            public void onSuccess(Uri uri) {
-//                Glide.with(ChatActivity.this)
-//                        .load(uri)
-//                        .into(senderImage);
-//            }
-//        })
-//                .addOnFailureListener(new OnFailureListener() {
-//                    @Override
-//                    public void onFailure(@NonNull Exception exception) {
-//                        // Handle any errors
-//                        Log.e("status", "false");
-//
-//                    }
-//            });
-        chatAdapter = new ChatAdapter(ChatActivity.this);
+        tvSenderName.setText(getIntent().getStringExtra("name"));// Lấy dữ liệu từ intent
+        FirebaseStorage storage = FirebaseStorage.getInstance();//tạo 1 cái để lưu trên firebase
+        StorageReference storageRef = storage.getReference();// trả về giá trị gốc trên firebase
+        chatAdapter = new ChatAdapter(ChatActivity.this);// tạo 1 cái adapter mới  truyên vào tham số tham chiếu đến activity hiện tại
+        //tạo 1 đối tương linerlayout để quản lý hiển thị các mục trong recyclerView với chiều dọc và các mục mới thêm vào đầu danh sách cũ ở cuối dnah sách
         LinearLayoutManager linearLayoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL, true);
-        rcvChat.setLayoutManager(linearLayoutManager);
-        rcvChat.setAdapter(chatAdapter);
-        getChatList();
-
+        rcvChat.setLayoutManager(linearLayoutManager);// xác inh cách hiển thị
+        rcvChat.setAdapter(chatAdapter);//kết nối dữ liệu chat với recyclerviewd để hiển thị
+        getChatList();//lấy danh sách chat từ nguồn dữ kiệu và cập nhật vào châtdapter
+        //Xử lý sự kiện khi nhân button gửi
         btnSendMessage.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(edtMessage.length() == 0) {
+                if(edtMessage.length() == 0) {// người dùng ko nhập kí tự nào
                     return ;
                 }
 
-                FirebaseFirestore db = FirebaseFirestore.getInstance();
-                Timestamp timestamp = Timestamp.now();
+                FirebaseFirestore db = FirebaseFirestore.getInstance();// tạo cái firebare để luw trữ
+                Timestamp timestamp = Timestamp.now();// đối tượng thời gian hiện tại
                 db.collection("messages")
-                        .add(new Chat(getIntent().getStringExtra("conversationId"),
-                                timestamp,
-                                true,getIntent().getStringExtra("userId") ,
-                                edtMessage.getText().toString()))
-                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {
+                        .add(new Chat(getIntent().getStringExtra("conversationId"),// thêm dữ liệu mới vào  bộ sưu tâ messages
+                                timestamp,// thời gian
+                                true,getIntent().getStringExtra("userId") ,//id người dùng nhắn
+                                edtMessage.getText().toString()))// nội dung tin nhắn
+                        .addOnSuccessListener(new OnSuccessListener<DocumentReference>() {// nếu thành công
                             @Override
-                            public void onSuccess(DocumentReference documentReference) {
+                            public void onSuccess(DocumentReference documentReference) {//lưu vào documment
 
                                 db.collection("conversations")
                                     .document(getIntent().getStringExtra("conversationId"))
-                                    .update("lastMessage", documentReference.getId());
-                                getChatList();
+                                    .update("lastMessage", documentReference.getId());// cập nhật last messages
+                                getChatList();//cập nhật lại phương thức chat
                             }
                         });
 
-                edtMessage.setText("");
+                edtMessage.setText("");//xóa nội dung edtMessage sau khi được gửi
             }
         });
     }
@@ -124,9 +107,9 @@ public class ChatActivity extends AppCompatActivity {
 
     void getChatList() {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        conversationListener =  db.collection("messages")
-                .orderBy("createAt", Query.Direction.DESCENDING)
-                .whereEqualTo("conversationId", getIntent().getStringExtra("conversationId"))
+        conversationListener =  db.collection("messages") //truy cập vào bộ suw tập mesages
+                .orderBy("createAt", Query.Direction.DESCENDING)// sắp xếp tài liệu theo trường createAt theo thứ tụ giảm dần để tin nhắn mới xuât hiên đầu tiên trong danh sách
+                .whereEqualTo("conversationId", getIntent().getStringExtra("conversationId"))// lọc các tài liệu chỉ chứa trường conversation có giá trị trùng khớp
                 .addSnapshotListener(new EventListener<QuerySnapshot>() {
                     @Override
                     public void onEvent(@Nullable QuerySnapshot querySnapshot, @Nullable FirebaseFirestoreException e) {
@@ -134,13 +117,13 @@ public class ChatActivity extends AppCompatActivity {
                             return;
                         }
 
-                        ArrayList<Chat> chats = new ArrayList<>();
+                        ArrayList<Chat> chats = new ArrayList<>();// tạo 1 list để lưu trữ mesages
                         for (DocumentSnapshot documentSnapshot : querySnapshot) {
-                            Chat chat = documentSnapshot.toObject(Chat.class);
+                            Chat chat = documentSnapshot.toObject(Chat.class);// chuyển đối tượng chat về dang document
                             chats.add(chat);
                         }
 
-                        chatAdapter.SetList(chats);
+                        chatAdapter.SetList(chats);//Cập nhật  danh sạch lên firebase
                     }
                 });
     }
@@ -148,7 +131,7 @@ public class ChatActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
-        conversationListener.remove();
+        super.onDestroy();// thực hiện thao tác hủy lớp cha
+        conversationListener.remove();//ngăn sự thay đội sau khi hoạt động đã kết thúc
     }
 }

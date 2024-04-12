@@ -29,22 +29,33 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     Context context;
     ArrayList<DetailCart> mList;
 
+    // Constructor để khởi tạo adapter với context
     public OrderAdapter(Context context) {
         this.context = context;
     }
 
+    // Phương thức này được sử dụng để cập nhật dữ liệu danh sách chi tiết đơn hàng
     public void setList(ArrayList<DetailCart> mList) {
         this.mList = mList;
+        notifyDataSetChanged();
     }
+
+    // Phương thức này tạo ViewHolder cho mỗi item
     @NonNull
     @Override
     public OrderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        // Tạo một View từ layout item_product_order.xml
         View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_product_order, parent, false);
         return new OrderViewHolder(v);
     }
+
+    // Phương thức này được gọi để hiển thị dữ liệu tại vị trí đã chỉ định từ danh sách chi tiết đơn hàng
     @Override
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
+        // Lấy ra đối tượng DetailCart tại vị trí position trong danh sách chi tiết đơn hàng
         DetailCart detailCart = mList.get(position);
+
+        // Truy vấn Firestore để lấy thông tin sản phẩm dựa trên ID của sản phẩm trong chi tiết đơn hàng
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("products")
                 .document(detailCart.getProductId())
@@ -53,13 +64,17 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
                         if(documentSnapshot.exists()) {
+                            // Nếu tài liệu tồn tại, chuyển đổi nó thành đối tượng Product
                             Product product = documentSnapshot.toObject(Product.class);
+                            // Đặt tên sản phẩm và giá của sản phẩm lên TextViews tương ứng
                             holder.tvProductOrderName.setText(product.getName());
                             holder.tvProductOrderPrice.setText(String.valueOf(product.getPrice()));
+
+                            // Tạo một tham chiếu đến Firebase Storage để tải ảnh sản phẩm từ URL được cung cấp
                             FirebaseStorage storage = FirebaseStorage.getInstance();
                             StorageReference storageRef = storage.getReference();
-                            //tải ảnh từ firebase
 
+                            // Tải ảnh sản phẩm từ Firebase Storage và hiển thị nó trong ImageView bằng Glide
                             storageRef.child(product.getImgBig()).getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
                                 @Override
                                 public void onSuccess(Uri uri) {
@@ -70,16 +85,18 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
                             }).addOnFailureListener(new OnFailureListener() {
                                 @Override
                                 public void onFailure(@NonNull Exception exception) {
-                                    // Handle any errors
+                                    // Xử lý lỗi nếu không tải được ảnh
                                 }
                             });
                         }
-
                     }
                 });
+
+        // Đặt số lượng sản phẩm lên TextView
         holder.tvProductOrderQuatity.setText("Số lượng: " + String.valueOf(detailCart.getQuatity()));
     }
-    //trả về số lượng sp trong list
+
+    // Phương thức này trả về số lượng item trong danh sách chi tiết đơn hàng
     @Override
     public int getItemCount() {
         if(mList != null) {
@@ -88,6 +105,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
         return 0;
     }
 
+    // Class ViewHolder để giữ các thành phần giao diện cho mỗi item trong RecyclerView
     public class OrderViewHolder extends RecyclerView.ViewHolder {
 
         ImageView productOrderImage;
@@ -97,6 +115,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
+            // Ánh xạ các thành phần giao diện từ layout item_product_order.xml
             productOrderImage = itemView.findViewById(R.id.product_order_img);
             tvProductOrderName = itemView.findViewById(R.id.product_order_name);
             tvProductOrderQuatity = itemView.findViewById(R.id.product_order_quatity);

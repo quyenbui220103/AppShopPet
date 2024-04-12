@@ -52,17 +52,17 @@ public class EditInfoActivity extends AppCompatActivity {
 
         initUI();
 
-        String userId = FirebaseAuth.getInstance().getUid();
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        String userId = FirebaseAuth.getInstance().getUid();// lay Id nguoi dung tren firebase
+        FirebaseFirestore db = FirebaseFirestore.getInstance();// tt csdl vs firestore
         FirebaseStorage storage = FirebaseStorage.getInstance();
-        StorageReference storageRef = storage.getReference();
-        db.collection("users")
+        StorageReference storageRef = storage.getReference();//tham chieu den thu goc de tai anh hoac tep lem
+        db.collection("users")// lay thong tin nguoi dung tren fire base users
                 .document(userId)
                 .get()
                 .addOnSuccessListener(new OnSuccessListener<DocumentSnapshot>() {
                     @Override
                     public void onSuccess(DocumentSnapshot documentSnapshot) {
-                        if(documentSnapshot.exists()) {
+                        if(documentSnapshot.exists()) {//neu tt ton tai thi tra du lieu
                             tvEmailInfo.setText((String) documentSnapshot.get("email"));
                             edtFirstNameInfo.setText((String) documentSnapshot.get("firstName"));
                             edtLastNameInfo.setText((String) documentSnapshot.get("lastName"));
@@ -72,11 +72,11 @@ public class EditInfoActivity extends AppCompatActivity {
                                     .addOnSuccessListener(new OnSuccessListener<Uri>() {
                                         @Override
                                         public void onSuccess(Uri uri) {
-                                            imageUri = uri;
+                                            imageUri = uri;//lay dia chi url
                                             Glide.with(EditInfoActivity.this)
-                                                    .load(uri)
-                                                    .into(imgInfo);
-                                            imageName = new File(uri.getPath()).getName();
+                                                    .load(uri)//tao anh
+                                                    .into(imgInfo);//hien thi anh
+                                            imageName = new File(uri.getPath()).getName();//tao 1 dt de lay ten anh tu uri voi ten file
                                         }
                                     });
                         }
@@ -87,7 +87,7 @@ public class EditInfoActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
                 setImageInfo();
-            }
+            }//tai anh len tu thu vien
         });
 
         btnConfirmInfo.setOnClickListener(new View.OnClickListener() {
@@ -100,13 +100,13 @@ public class EditInfoActivity extends AppCompatActivity {
                 String passwordConfirm = edtConfirmPasswordInfo.getText().toString();
                 if(!newPassword.equals(passwordConfirm)) {
                     edtConfirmPasswordInfo.setError("Mật khẩu không trùng nhau !!");
-                    edtConfirmPasswordInfo.setFocusable(true);
+                    edtConfirmPasswordInfo.setFocusable(true);//dua ra edittext nhap lai pass
                     return ;
                 }
 
-                Timestamp timestamp = Timestamp.now();
+                Timestamp timestamp = Timestamp.now();//lay thoi gian thuc de chinh sua
                 User user = new User(email, firstName, lastName, imageName, newPassword, timestamp);
-                db.collection("users")
+                db.collection("users")//dua tt ms len firebase thong qua collection usert
                         .document(userId).
                         set(user)
                         .addOnSuccessListener(new OnSuccessListener<Void>() {
@@ -118,13 +118,13 @@ public class EditInfoActivity extends AppCompatActivity {
                             }
                         });
 
-                storageRef.child(imageName)
-                        .putFile(imageUri)
+                storageRef.child(imageName)//xd vi tri tham chieu tren firebase storage
+                        .putFile(imageUri)//tai anh len
                         .addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
                             @Override
                             public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
                                 Glide.with(EditInfoActivity.this)
-                                        .load(imageUri)
+                                        .load(imageUri)//tai anh len
                                         .into(imgInfo);
                             }
                         });
@@ -146,7 +146,7 @@ public class EditInfoActivity extends AppCompatActivity {
 
     void setImageInfo() {
         Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(intent, REQUEST_CODE);
+        startActivityForResult(intent, REQUEST_CODE);// tai anh tu tv thong qu intent
 
     }
 
@@ -155,13 +155,13 @@ public class EditInfoActivity extends AppCompatActivity {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (resultCode == RESULT_OK && requestCode == REQUEST_CODE && data != null) {
-            imageUri = data.getData();
+            imageUri = data.getData();//lay dia chia url
             Glide.with(this)
                     .load(imageUri)
                     .into(imgInfo);
-            String date = String.valueOf(Timestamp.now().toDate().getTime());
-            String parseName = new File(imageUri.getPath()).getName();
-            imageName =parseName + "_" + date;
+            String date = String.valueOf(Timestamp.now().toDate().getTime());//lay time htai sau do chuyen ve chuoi
+            String parseName = new File(imageUri.getPath()).getName();//lay ten file hinh anh
+            imageName =parseName + "_" + date;//tao ten moi cho hinh anh
         } else {
             Toast.makeText(EditInfoActivity.this, "Bạn chưa chọn ảnh nào cả", Toast.LENGTH_SHORT).show();
         }
